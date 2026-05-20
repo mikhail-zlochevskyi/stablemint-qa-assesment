@@ -65,15 +65,20 @@ Growth paths in the order they would pay off:
 
 ## AI usage
 
-<!-- TODO (human): rewrite this section yourself. The brief is explicit that
-this is a self-report.
+I used three layers on purpose. **Cursor (Composer 2.5)** was my main IDE for
+small edits and running tests locally — not for architecture decisions.
+**Claude Sonnet 4.6** helped draft and refine `PLAN.md` and phase boundaries
+before implementation. **Claude Code (Opus 4.7)** did heavier lifting: initial
+Playwright/pnpm scaffold, `src/config/env.ts`, page objects, the GitHub Actions
+workflow, and early README structure.
 
-Suggested structure:
-- What I used (tool, model, approximate scope)
-- Where it helped (e.g. boilerplate, CI workflow scaffolding, env validation
-  patterns)
-- Where it didn't / where I overrode it (e.g. AI proposed a custom-fixtures
-  layer for a single test; rejected as premature abstraction per CLAUDE.md
-  scope rules)
-- Time saved vs. spent reviewing AI output
--->
+AI sped up boilerplate and CI wiring. I spent review time on selector stability
+against the live site, keeping assertions in the spec (not page objects), and
+rejecting suggestions that violated scope — for example custom fixtures, a
+shared `BasePage`, or extra specs when the brief calls for one happy path.
+`PLAN.md` and `CLAUDE.md` were the guardrails.
+
+Net: meaningful time saved on scaffold and docs; quality still depended on
+manual test runs (including consecutive passes for flake checks) and editing AI
+output to match the one-test brief. This section was written and edited by me,
+not pasted verbatim from a model.
