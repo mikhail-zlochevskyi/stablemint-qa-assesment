@@ -16,8 +16,8 @@ PLAN.md is the source of truth. When in doubt, re-read it.
 
 # Workflow
 
-- Work in phases (see PLAN.md section 11). After each phase, stop and report
-  status. Do not chain phases without confirmation.
+- Work in phases (see the **Phases** section of PLAN.md). After each phase,
+  stop and report status. Do not chain phases without confirmation.
 - After any change to a spec or page object, run the test and show the result.
 - If a test fails, do not retry blindly. Diagnose first, propose a fix, then apply.
 - Never modify PLAN.md or CLAUDE.md without explicit instruction.
