@@ -58,6 +58,8 @@ Growth paths in the order they would pay off:
 - **Authenticated-state reuse.** A `storageState` fixture that logs in once via API and writes cookies for downstream specs. Cuts seconds per test once a non-login flow exists.
 - **Cross-browser coverage.** Add `firefox` and `webkit` to the `projects` array in `playwright.config.ts`. CI already isolates the Chromium install; mirror that step for the others.
 - **Negative cases.** Invalid credentials, locked-out users, validation errors. `LoginPage.errorFlash` is already exposed, so the next spec is mechanical. Excluded today because the brief asks for one happy path.
+- **Mobile coverage when the product needs it.** Add Playwright `projects` with device descriptors (or viewport emulation) for responsive layouts and touch-specific flows. Skip until mobile is in scope — this take-home target is desktop Chromium only.
+- **Lower-level tests where E2E is the wrong tool.** Push auth setup, session contracts, and validation rules to API or unit tests; use component tests for isolated UI states. Reserve UI E2E for multi-page journeys that only make sense in a real browser. A `src/api/` client for setup-only login (cookies/tokens) pairs well with fewer, faster E2E specs.
 
 ## CI
 
@@ -65,20 +67,16 @@ Growth paths in the order they would pay off:
 
 ## AI usage
 
-I used three layers on purpose. **Cursor (Composer 2.5)** was my main IDE for
-small edits and running tests locally — not for architecture decisions.
-**Claude Sonnet 4.6** helped draft and refine `PLAN.md` and phase boundaries
-before implementation. **Claude Code (Opus 4.7)** did heavier lifting: initial
-Playwright/pnpm scaffold, `src/config/env.ts`, page objects, the GitHub Actions
-workflow, and early README structure.
+I used three tools deliberately, escalating by cost and capability:
 
-AI sped up boilerplate and CI wiring. I spent review time on selector stability
-against the live site, keeping assertions in the spec (not page objects), and
-rejecting suggestions that violated scope — for example custom fixtures, a
-shared `BasePage`, or extra specs when the brief calls for one happy path.
-`PLAN.md` and `CLAUDE.md` were the guardrails.
+- **Cursor + Composer 2.5.** Day-to-day editor: small diffs, local test runs, lint fixes. Not used for architecture.
+- **Claude Sonnet 4.6.** Planning. `PLAN.md`, phase boundaries, and scope cuts before any code.
+- **Claude Code (Opus 4.7).** Heavy execution when the cost was worth it. Initial Playwright/pnpm scaffold, `src/config/env.ts` with the zod boundary, page-object boilerplate (`login-page.ts`, `secure-area-page.ts`), `.github/workflows/test.yml`, and a first README draft.
 
-Net: meaningful time saved on scaffold and docs; quality still depended on
-manual test runs (including consecutive passes for flake checks) and editing AI
-output to match the one-test brief. This section was written and edited by me,
-not pasted verbatim from a model.
+**Where it helped.** Scaffold and CI YAML each in roughly one prompt. The `process.loadEnvFile` + zod pattern in `env.ts` (I wouldn't have reached for native env-file loading first). README structure: sections 1–6 drafted by Opus, then I rewrote the *Framework structure* boundaries and the *Extending* section in my own voice.
+
+**Where I overrode it.** Cut a `src/fixtures/` layer extending Playwright `test` and an abstract `BasePage` that Opus proposed early; for one spec the indirection costs more than the duplication it saves. Held the brief's one-happy-path scope and pushed negative cases, cross-browser projects, and a custom reporter to *Extending*. Smaller calls: assertions stay in the spec (not on page objects), no `waitForTimeout` (web-first assertions only), no selectors in test files. `PLAN.md` and `CLAUDE.md` were the guardrails that made those calls cheap.
+
+**Time, honestly.** Scaffold + CI + boilerplate probably saved 1–2 hours. I spent ~30–60 minutes reviewing output, running the spec three times for flake checks, fixing one over-broad heading selector that matched two elements, and rewriting README prose that read too much like LLM output.
+
+I wrote this section by hand. The rest of the README was AI-structured and heavily edited.
