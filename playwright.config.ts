@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { env } from "@/config/env";
 
 export default defineConfig({
   testDir: "./tests",
@@ -6,6 +7,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: [["list"]],
   use: {
+    baseURL: env.BASE_URL,
     trace: "on-first-retry",
   },
   projects: [
