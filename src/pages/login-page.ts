@@ -1,17 +1,19 @@
 import type { Locator, Page } from "@playwright/test";
-import { BasePage } from "@/pages/base-page";
 
-export class LoginPage extends BasePage {
+export class LoginPage {
+  readonly heading: Locator;
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
+  readonly successFlash: Locator;
   readonly errorFlash: Locator;
 
-  constructor(page: Page) {
-    super(page);
+  constructor(private readonly page: Page) {
+    this.heading = page.getByRole("heading", { name: "Login Page", exact: true });
     this.usernameInput = page.getByLabel("Username");
     this.passwordInput = page.getByLabel("Password");
     this.submitButton = page.getByRole("button", { name: /login/i });
+    this.successFlash = page.locator("#flash.success");
     this.errorFlash = page.locator("#flash.error");
   }
 
