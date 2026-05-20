@@ -7,3 +7,4 @@ playwright/.cache/
 .env.*
 !.env.example
 .DS_Store
+screenshots/
