@@ -23,7 +23,7 @@ Running 1 test using 1 worker
 
 ## The test scenario
 
-`tests/login.spec.ts` exercises one flow: log in at `/login`, assert the secure-area landing state, log out, and assert return to `/login` with the logout success flash. Credentials come from the environment. Negative cases, fixture extraction, and cross-browser coverage are deferred deliberately (see *Extending* below).
+`tests/login.spec.ts` exercises one flow: log in at `/login`, assert the secure-area landing state, log out, and assert return to `/login` with the logout success flash. Credentials come from the environment. The spec uses `async ({ page })` and instantiates page objects inline (`new LoginPage(page)`); a custom `test.extend` fixtures layer is deferred. Negative cases and cross-browser coverage are deferred deliberately (see *Extending* below).
 
 ## Framework structure
 
@@ -43,7 +43,7 @@ The boundaries matter more than the files:
 
 - **`src/config/env.ts` is the only file that reads `process.env`.** It parses with zod and throws on missing or malformed vars at module load. A typo in `.env` fails at boot, not three minutes into a flaky test.
 - **Page objects own selectors and intent, never assertions.** `LoginPage.loginAs(user, pass)` is the surface; how the click happens is private. Selectors prefer role/label over CSS so they survive markup churn. No shared base class — there is nothing yet worth sharing.
-- **Specs own assertions and nothing else.** No raw selectors, no hardcoded URLs or credentials. Imports use the `@/` alias so refactors don't ripple through relative paths.
+- **Specs own assertions and nothing else.** No raw selectors, no hardcoded URLs or credentials. Page objects are constructed inline in the spec (`new LoginPage(page)`), not injected via `test.extend`. Imports use the `@/` alias so refactors don't ripple through relative paths.
 - **`playwright.config.ts` is the seam.** It is the only file that sees both the env layer and the Playwright runtime.
 
 Full conventions live in [`CLAUDE.md`](./CLAUDE.md).
@@ -56,7 +56,7 @@ Growth paths in the order they would pay off:
 - **Negative and edge cases.** Invalid credentials, lockout, field validation. `LoginPage.errorFlash` is already exposed, so these are mechanical to add — left out today only because the brief asked for a single happy path. Cheaper and higher-value than most items below it; sitting this high deliberately.
 - **A new page.** `src/pages/<name>-page.ts`: locators up top, intent methods under them. The base class already handles `goto` / `waitForReady`.
 - **Cross-browser.** Uncomment `firefox` and `webkit` in the `projects` array. CI already isolates the Chromium install step; the others reuse it.
-- **Custom fixtures for shared POs.** `test.extend` so specs read `async ({ loginPage }) => …`. Worth it once three-plus specs would otherwise repeat `new LoginPage(page)` — not before, since the indirection costs more than it saves for one or two.
+- **Custom fixtures for shared POs.** Add `src/fixtures/` with `test.extend` so specs read `async ({ loginPage }) => …` instead of repeating `new LoginPage(page)`. Worth it once three-plus specs share that boilerplate — not before; the shipped spec already uses inline construction on purpose.
 - **Shared auth state.** A `storageState` fixture that logs in once via API and hands cookies to downstream specs. Removes the login UI as a dependency of unrelated flows and shaves seconds per test. Only pays off once a non-login flow exists.
 - **Push tests down the pyramid.** The highest-value move, and it isn't a UI one. Validation rules, session contracts, and auth setup belong in API and unit tests; isolated component states belong in component tests. Reserve browser E2E for journeys that only make sense end-to-end. A setup-only `src/api/` client is the enabler — it trades a slow, UI-heavy suite for fewer, faster specs. On a payments product that's the gap between a 3-minute and a 30-minute pipeline.
 - **Persisted reporting.** The HTML reporter answers "did this run pass." Once there's history worth watching, the real question is "is the suite getting flakier" — at which point publish the report to GitHub Pages per run, or graduate to Allure (trends/history) or a hosted runner like Currents (sharding plus flake analytics).

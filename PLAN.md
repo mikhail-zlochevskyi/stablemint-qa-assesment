@@ -118,6 +118,12 @@ logout success flash.
 and password inputs resolve cleanly via `getByLabel`; no CSS fallback
 needed.
 
+**Spec shape (shipped):** `test(..., async ({ page }) => { ... })` with
+`new LoginPage(page)` and `new SecureAreaPage(page)` in the spec body — not
+`async ({ loginPage, secureAreaPage })`. No `src/fixtures/` or `test.extend`
+at this scope; custom PO fixtures stay in *Abstractions deliberately not built*
+until 3+ specs repeat the same `new LoginPage(page)` boilerplate.
+
 ## Phases (execute in order, stop after each)
 
 ### Phase 1 — Scaffold
@@ -151,6 +157,8 @@ needed.
 - Replace the smoke spec with the real login + logout spec (see *The test*)
 - Imports: `test`, `expect` from `@playwright/test`; `env` from `src/config/`;
   page objects from `src/pages/`
+- Instantiate POs inline (`new LoginPage(page)`); do not add `src/fixtures/`
+  or `test.extend` PO injection at this scope
 - No selectors, no hardcoded URLs, no hardcoded credentials in the spec
 - Run 3x consecutively to confirm no flake
 - **Exit criteria:** 3 consecutive green runs locally
