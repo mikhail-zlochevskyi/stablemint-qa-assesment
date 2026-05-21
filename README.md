@@ -52,8 +52,8 @@ Full conventions live in [`CLAUDE.md`](./CLAUDE.md).
 
 Growth paths in the order they would pay off:
 
-- **More specs, same page objects.** New file in `tests/`, import the page objects, write assertions. Zero new infrastructure. That thinness is the whole point.
-- **Negative and edge cases.** Invalid credentials, lockout, field validation. `LoginPage.errorFlash` is already exposed, so these are mechanical to add — left out today only because the brief asked for a single happy path. Cheaper and higher-value than most items below it; sitting this high deliberately.
+- **More specs, same page objects.** New file in `tests/`, import the page objects, write assertions. Zero new infrastructure. 
+- **Negative and edge cases.** Invalid credentials, lockout, field validation. `LoginPage.errorFlash` is already exposed, so these are mechanical to add — left out today only because the brief asked for a single happy path. 
 - **A new page.** `src/pages/<name>-page.ts`: locators up top, intent methods under them. The base class already handles `goto` / `waitForReady`.
 - **Cross-browser.** Uncomment `firefox` and `webkit` in the `projects` array. CI already isolates the Chromium install step; the others reuse it.
 - **Custom fixtures for shared POs.** Add `src/fixtures/` with `test.extend` so specs read `async ({ loginPage }) => …` instead of repeating `new LoginPage(page)`. Worth it once three-plus specs share that boilerplate — not before; the shipped spec already uses inline construction on purpose.
@@ -61,7 +61,7 @@ Growth paths in the order they would pay off:
 - **Push tests down the pyramid.** The highest-value move, and it isn't a UI one. Validation rules, session contracts, and auth setup belong in API and unit tests; isolated component states belong in component tests. Reserve browser E2E for journeys that only make sense end-to-end. A setup-only `src/api/` client is the enabler — it trades a slow, UI-heavy suite for fewer, faster specs. On a payments product that's the gap between a 3-minute and a 30-minute pipeline.
 - **Persisted reporting.** The HTML reporter answers "did this run pass." Once there's history worth watching, the real question is "is the suite getting flakier" — at which point publish the report to GitHub Pages per run, or graduate to Allure (trends/history) or a hosted runner like Currents (sharding plus flake analytics).
 - **Containerized runs.** The official `mcr.microsoft.com/playwright` image pins identical browser versions across local and CI, killing a common "works on my machine" flake class and dropping the local Playwright install from onboarding. Skipped here on purpose — it adds a layer between clone and green that this assignment doesn't need — but it's the correct call the moment env parity starts causing flake.
-- **Mobile when the product calls for it.** Playwright `projects` with device descriptors for responsive and touch flows. Out of scope while the target is desktop Chromium.
+- **Mobile when there is a product need.** Playwright `projects` with device descriptors for responsive and touch flows. Out of scope while the target is desktop Chromium.
 
 ## CI
 
