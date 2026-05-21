@@ -52,15 +52,16 @@ Full conventions live in [`CLAUDE.md`](./CLAUDE.md).
 
 Growth paths in the order they would pay off:
 
-- **A second spec using the same page objects.** Drop a file in `tests/`, instantiate the POs at the top, write assertions. No new infrastructure needed — that is the point of keeping the spec layer thin.
-- **A new page.** Add `src/pages/<name>-page.ts`. Locators in the constructor, intent methods below.
-- **Custom Playwright fixtures.** `test.extend` to inject pre-built POs so specs read `async ({ loginPage }) => ...`. Worth it once three or more specs would otherwise repeat `new LoginPage(page)`; not before, because the indirection cost outweighs the line savings for a single spec.
-- **Authenticated-state reuse.** A `storageState` fixture that logs in once via API and writes cookies for downstream specs. Cuts seconds per test once a non-login flow exists.
-- **Cross-browser coverage.** Add `firefox` and `webkit` to the `projects` array in `playwright.config.ts`. CI already isolates the Chromium install; mirror that step for the others.
-- **Negative cases.** Invalid credentials, locked-out users, validation errors. `LoginPage.errorFlash` is already exposed, so the next spec is mechanical. Excluded today because the brief asks for one happy path.
-- **Move testing on lower level than UI.** Push auth setup, session contracts, and validation rules to API or unit tests; use component tests for isolated UI states. Reserve UI E2E for multi-page journeys that only make sense in a real browser. A `src/api/` client for setup-only login (cookies/tokens) pairs well with fewer, faster E2E specs.
-- **Mobile coverage when the product needs it.** Add Playwright `projects` with device descriptors (or viewport emulation) for responsive layouts and touch-specific flows. Skip until mobile is in scope — this take-home target is desktop Chromium only.
-
+- **More specs, same page objects.** New file in `tests/`, import the page objects, write assertions. Zero new infrastructure. That thinness is the whole point.
+- **Negative and edge cases.** Invalid credentials, lockout, field validation. `LoginPage.errorFlash` is already exposed, so these are mechanical to add — left out today only because the brief asked for a single happy path. Cheaper and higher-value than most items below it; sitting this high deliberately.
+- **A new page.** `src/pages/<name>-page.ts`: locators up top, intent methods under them. The base class already handles `goto` / `waitForReady`.
+- **Cross-browser.** Uncomment `firefox` and `webkit` in the `projects` array. CI already isolates the Chromium install step; the others reuse it.
+- **Custom fixtures for shared POs.** `test.extend` so specs read `async ({ loginPage }) => …`. Worth it once three-plus specs would otherwise repeat `new LoginPage(page)` — not before, since the indirection costs more than it saves for one or two.
+- **Shared auth state.** A `storageState` fixture that logs in once via API and hands cookies to downstream specs. Removes the login UI as a dependency of unrelated flows and shaves seconds per test. Only pays off once a non-login flow exists.
+- **Push tests down the pyramid.** The highest-value move, and it isn't a UI one. Validation rules, session contracts, and auth setup belong in API and unit tests; isolated component states belong in component tests. Reserve browser E2E for journeys that only make sense end-to-end. A setup-only `src/api/` client is the enabler — it trades a slow, UI-heavy suite for fewer, faster specs. On a payments product that's the gap between a 3-minute and a 30-minute pipeline.
+- **Persisted reporting.** The HTML reporter answers "did this run pass." Once there's history worth watching, the real question is "is the suite getting flakier" — at which point publish the report to GitHub Pages per run, or graduate to Allure (trends/history) or a hosted runner like Currents (sharding plus flake analytics).
+- **Containerized runs.** The official `mcr.microsoft.com/playwright` image pins identical browser versions across local and CI, killing a common "works on my machine" flake class and dropping the local Playwright install from onboarding. Skipped here on purpose — it adds a layer between clone and green that this assignment doesn't need — but it's the correct call the moment env parity starts causing flake.
+- **Mobile when the product calls for it.** Playwright `projects` with device descriptors for responsive and touch flows. Out of scope while the target is desktop Chromium.
 
 ## CI
 
